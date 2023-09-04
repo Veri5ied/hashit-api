@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import authRoutes from "./routes/auth";
+import messageRoute from "./routes/messages";
 import "dotenv/config";
 import "./database/db";
 
@@ -11,6 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/auth", authRoutes);
+app.use("/messages", messageRoute);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
