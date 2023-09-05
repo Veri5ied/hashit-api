@@ -22,15 +22,16 @@ export const registerUser = async (
       return;
     }
 
+    //change username format
+    const formattedUsername = `@${username}`;
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
     // Create a new user document
     const user = new User({
-      username,
+      username: formattedUsername,
       password: hashedPassword,
     });
 
-    // Save the user to the database
     await user.save();
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
@@ -42,7 +43,14 @@ export const registerUser = async (
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
   const { username, password } = req.body;
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({
+      $or: [
+        { username },
+        {
+          username: `@${username}`,
+        },
+      ],
+    });
 
     if (!user) {
       res.status(401).json({ error: "Invalid username or password" });

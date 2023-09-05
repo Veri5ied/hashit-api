@@ -11,7 +11,7 @@ export const sendMessage = async (
     const { username } = req.params;
     const { content } = req.body;
 
-    const recipient = await User.findOne({ username });
+    const recipient = await User.findOne({ username: `@${username}` });
 
     if (!recipient) {
       res.status(404).json({ error: "Recipient not found" });
@@ -45,7 +45,7 @@ export const getMessages = async (
     const { username } = req.params;
 
     // Find the recipient user by username
-    const recipient = await User.findOne({ username });
+    const recipient = await User.findOne({ username: `@${username}` });
     if (!recipient) {
       res.status(404).json({ error: "Recipient not found" });
       return;
