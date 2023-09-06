@@ -903,7 +903,7 @@ mongodb@5.8.1:
 
 mongoose@^7.5.0:
   version "7.5.0"
-  resolved "https://registry.npmjs.org/mongoose/-/mongoose-7.5.0.tgz"
+  resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-7.5.0.tgz#d10003ffc1ff876d761c7cbca6844ddd2aadd42f"
   integrity sha512-FpOWOb0AJuaVcplmEyIJ2eCbVGe4gOoniPD+pmft5BrGrNrsFcnYXlERdXtBApGHMHPwD7WbxTyhCbUNr72F3Q==
   dependencies:
     bson "^5.4.0"
