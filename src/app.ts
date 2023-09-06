@@ -7,7 +7,13 @@ import "./database/db";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000" || "https://hashit.xyz",
+    credentials: true,
+    optionsSuccessStatus: 200 || 204,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
