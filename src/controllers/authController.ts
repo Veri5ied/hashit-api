@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import generatePasswordResetToken from "../utils/generatepassword";
+import sendPasswordResetEmail from "../utils/mailer";
 import User from "../models/User";
 
 export const registerUser = async (
@@ -77,5 +79,69 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Login failed" });
+  }
+};
+
+//reset password
+export const requestPasswordReset = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    const token = generatePasswordResetToken();
+
+    user.passwordResetToken = token;
+    user.passwordResetTokenExpires = Date.now() + 3600000; // 1 hour
+
+    await user.save();
+
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/${token}`;
+    sendPasswordResetEmail(email, resetLink);
+    res.status(200).json({ message: "Password reset link sent" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Password reset failed" });
+  }
+};
+
+export const resetPassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { token, newPassword, verifyPassword } = req.body;
+  try {
+    const user = await User.findOne({
+      passwordResetToken: token,
+      passwordResetTokenExpires: { $gt: Date.now() },
+    });
+    if (!user) {
+      res.status(401).json({ error: "Invalid token" });
+      return;
+    }
+
+    if (newPassword !== verifyPassword) {
+      res.status(400).json({ error: "Passwords do not match" });
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+
+    user.passwordResetToken = undefined;
+    user.passwordResetTokenExpires = undefined;
+
+    await user.save();
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Password reset failed" });
   }
 };
