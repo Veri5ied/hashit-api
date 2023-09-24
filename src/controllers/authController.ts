@@ -12,11 +12,13 @@ export const registerUser = async (
   const { username, password, verifyPassword, email } = req.body;
 
   try {
-    const existingUser = await User.findOne({ username });
+    if (username) {
+      const existingUser = await User.findOne({ username });
 
-    if (existingUser) {
-      res.status(400).json({ error: "Username already exists" });
-      return;
+      if (existingUser) {
+        res.status(400).json({ error: "Username already exists" });
+        return;
+      }
     }
 
     if (email) {
