@@ -9,44 +9,44 @@ export const registerUser = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { username, password, verifyPassword, email } = req.body;
-
   try {
-    if (username) {
-      const existingUser = await User.findOne({ username });
+    const { username, password, verifyPassword, email } = req.body;
 
-      if (existingUser) {
-        res.status(400).json({ error: "Username already exists" });
-        return;
-      }
+    // Check if both password fields match
+    if (password !== verifyPassword) {
+      res.status(400).json({ error: "Password and verification do not match" });
+      return;
     }
 
+    // Check if a user with the given username exists
+    const existingUser = await User.findOne({ username: `@${username}` });
+    if (existingUser) {
+      res.status(400).json({ error: "Username already exists" });
+      return;
+    }
+
+    // Check if a user with the given email exists (if provided)
     if (email) {
       const existingEmail = await User.findOne({ email });
-
       if (existingEmail) {
         res.status(400).json({ error: "Email is already in use" });
         return;
       }
     }
 
-    if (password !== verifyPassword) {
-      res.status(400).json({ error: "Password and verification do not match" });
-      return;
-    }
-
-    //change username format
-    const formattedUsername = `@${username}`;
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
+
     // Create a new user document
-    const user = new User({
-      username: formattedUsername,
+    const newUser = new User({
+      username: `@${username}`,
       password: hashedPassword,
       email: email || undefined,
     });
 
-    await user.save();
+    // Save the user to the database
+    await newUser.save();
+
     res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
     console.error(error);
