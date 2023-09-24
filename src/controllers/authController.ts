@@ -13,16 +13,19 @@ export const registerUser = async (
 
   try {
     const existingUser = await User.findOne({ username });
-    const existingEmail = await User.findOne({ email });
 
     if (existingUser) {
       res.status(400).json({ error: "Username already exists" });
       return;
     }
 
-    if (existingEmail) {
-      res.status(400).json({ error: "User with this email already exists" });
-      return;
+    if (email) {
+      const existingEmail = await User.findOne({ email });
+
+      if (existingEmail) {
+        res.status(400).json({ error: "Email is already in use" });
+        return;
+      }
     }
 
     if (password !== verifyPassword) {
@@ -38,6 +41,7 @@ export const registerUser = async (
     const user = new User({
       username: formattedUsername,
       password: hashedPassword,
+      email: email || undefined,
     });
 
     await user.save();
